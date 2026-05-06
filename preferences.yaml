@@ -4,7 +4,7 @@ commute_destination:
   lng: -0.1278
 
 must_haves:
-  max_commute_mins: 40
+  max_commute_mins: 45
   max_price_pcm: 3000
   min_bedrooms: 1
 
@@ -19,7 +19,7 @@ strong_preferences:
 
 deal_breakers:
   - studio or 0 bedrooms
-  - commute > 40 minutes door-to-door
+  - commute > 45 minutes door-to-door
   - price > 3000 pcm
   - basement flat (lower ground floor)
 
