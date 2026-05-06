@@ -4,7 +4,7 @@ Designed to be run as a one-shot script by GitHub Actions cron.
 """
 import logging
 import sys
-from db import init_db, filter_new, save_listing, mark_notified
+from db import init_db, is_empty, seed, filter_new, save_listing, mark_notified
 from scrapers import openrent, rightmove, onthemarket
 from enrichment.pipeline import enrich
 from scoring.claude import score
@@ -39,7 +39,14 @@ def run():
 
     log.info("Total scraped: %d", len(raw_listings))
 
-    # 2. Deduplicate
+    # 2. First-run seed: if DB is empty, just mark everything as seen and exit.
+    #    This prevents a flood of 100+ notifications on the very first run.
+    if is_empty():
+        seed(raw_listings)
+        log.info("First run — seeded %d listings into seen.db. Will process new ones next run.", len(raw_listings))
+        return
+
+    # 3. Deduplicate
     new_listings = filter_new(raw_listings)
     log.info("New (unseen): %d", len(new_listings))
 
@@ -47,7 +54,7 @@ def run():
         log.info("Nothing new. Done.")
         return
 
-    # 3. Filter obvious mismatches before enrichment (saves API calls)
+    # 4. Filter obvious mismatches before enrichment (saves API calls)
     candidates = [
         l for l in new_listings
         if _pre_filter(l)

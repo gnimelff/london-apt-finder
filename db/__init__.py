@@ -51,6 +51,24 @@ def init_db():
         """)
 
 
+def is_empty() -> bool:
+    """Return True if seen_listings has no rows (i.e. first ever run)."""
+    with get_conn() as conn:
+        row = conn.execute("SELECT COUNT(*) FROM seen_listings").fetchone()
+        return row[0] == 0
+
+
+def seed(listings: list[dict]):
+    """Mark all listings as seen without processing. Used on first run to avoid bulk spam."""
+    with get_conn() as conn:
+        for l in listings:
+            h = _dedup_hash(l)
+            conn.execute(
+                "INSERT OR IGNORE INTO seen_listings (site, listing_id, dedup_hash) VALUES (?,?,?)",
+                (l["site"], str(l["listing_id"]), h),
+            )
+
+
 def _dedup_hash(listing: dict) -> str:
     key = f"{listing.get('postcode', '')}|{listing.get('price_pcm', '')}|{listing.get('bedrooms', '')}"
     return hashlib.md5(key.encode()).hexdigest()
