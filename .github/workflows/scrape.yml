@@ -1,0 +1,46 @@
+name: Scrape London Apartments
+
+on:
+  schedule:
+    # Every 30 minutes. GitHub Actions can delay scheduled runs by up to 15 min.
+    - cron: '*/30 * * * *'
+  workflow_dispatch:  # manual trigger from GitHub UI
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Restore seen.db from the previous run.
+      # Key includes run_id so a new cache entry is always written (updating the DB).
+      # restore-keys falls back to the most recent previous entry if the exact key isn't found.
+      - name: Restore seen.db cache
+        uses: actions/cache@v4
+        with:
+          path: seen.db
+          key: seen-db-${{ github.run_id }}
+          restore-keys: seen-db-
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run pipeline
+        run: python run.py
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TFL_API_KEY: ${{ secrets.TFL_API_KEY }}
+          EPC_API_KEY: ${{ secrets.EPC_API_KEY }}
+          CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY }}
+          WHATSAPP_PHONE: ${{ secrets.WHATSAPP_PHONE }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          SCORE_THRESHOLD: '7'
+      # seen.db is automatically saved to cache after the job completes
+      # (actions/cache saves on post-step when key doesn't already exist)

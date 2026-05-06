@@ -1,0 +1,31 @@
+commute_destination:
+  address: "Your office address, London"
+  lat: 51.5074
+  lng: -0.1278
+
+must_haves:
+  max_commute_mins: 35
+  max_price_pcm: 3000
+  min_bedrooms: 1
+
+budget:
+  target_pcm: 2500
+  max_pcm: 3000
+
+strong_preferences:
+  - above ground floor (no basement flats — damp, poor light, security concerns)
+  - furnished preferred
+  - EPC rating C or above (D and below means expensive heating bills in London winters)
+
+deal_breakers:
+  - studio or 0 bedrooms
+  - commute > 50 minutes door-to-door
+  - price > 3000 pcm
+  - basement flat (lower ground floor)
+
+scoring_notes: |
+  Waterloo is Zone 1 on the Jubilee, Waterloo & City, Northern, and Bakerloo lines,
+  plus National Rail. Score based purely on commute time, price, and quality criteria —
+  do not penalise or reward based on neighbourhood name.
+  A flat scoring 6 on strict criteria but with unusually fast commute (< 20 min)
+  or significantly under budget should be bumped to 7.
