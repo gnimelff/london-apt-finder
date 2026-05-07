@@ -69,6 +69,13 @@ def run():
         # 4. Enrich
         listing = enrich(listing)
 
+        # Skip scoring if commute is too long (saves Claude credits)
+        commute = listing.get("commute_mins")
+        if commute is not None and commute > 45:
+            log.info("  Skipping (commute %d min > 45)", commute)
+            save_listing(listing)
+            continue
+
         # 5. Score
         result = score(listing)
         listing.update(result)
