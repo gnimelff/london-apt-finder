@@ -1,15 +1,16 @@
 """
-Google Maps Distance Matrix API — cycling time and distance to destination.
+TfL Journey Planner — cycling time and distance to destination.
 
+Uses mode=cycle (direct cycling, no bike hire) with cyclePreference=fastestRoute.
 Returns (duration_mins, distance_km) or (None, None) on failure.
 """
 import logging
 import httpx
-from config import GOOGLE_MAPS_API_KEY
+from config import TFL_API_KEY
 
 log = logging.getLogger(__name__)
 
-DISTANCE_MATRIX_URL = "https://maps.googleapis.com/maps/api/distancematrix/json"
+JOURNEY_URL = "https://api.tfl.gov.uk/Journey/JourneyResults/{origin}/to/{destination}"
 
 # WeWork Waterloo destination
 DEST_LAT = 51.5074
@@ -17,41 +18,42 @@ DEST_LNG = -0.1278
 
 
 def cycling_commute(lat: float, lng: float) -> tuple[int | None, float | None]:
-    """Return (cycling_mins, cycling_km) to Waterloo, or (None, None) on failure."""
-    if not GOOGLE_MAPS_API_KEY or not lat or not lng:
+    """Return (cycling_mins, cycling_km) to Waterloo via fastest cycle route, or (None, None)."""
+    if not lat or not lng:
         return None, None
+
+    origin = f"{lat},{lng}"
+    destination = f"{DEST_LAT},{DEST_LNG}"
+    url = JOURNEY_URL.format(origin=origin, destination=destination)
 
     try:
         resp = httpx.get(
-            DISTANCE_MATRIX_URL,
+            url,
             params={
-                "origins": f"{lat},{lng}",
-                "destinations": f"{DEST_LAT},{DEST_LNG}",
-                "mode": "bicycling",
-                "key": GOOGLE_MAPS_API_KEY,
+                "app_key": TFL_API_KEY,
+                "mode": "cycle",
+                "journeyPreference": "LeastTime",
             },
-            timeout=10,
+            timeout=15,
         )
         resp.raise_for_status()
         data = resp.json()
 
-        if data.get("status") != "OK":
-            log.warning("Google Maps status: %s", data.get("status"))
+        journeys = data.get("journeys", [])
+        if not journeys:
             return None, None
 
-        element = data["rows"][0]["elements"][0]
-        if element.get("status") != "OK":
-            log.warning("Google Maps element status: %s", element.get("status"))
-            return None, None
+        # Take the fastest journey by duration
+        fastest = min(journeys, key=lambda j: j.get("duration", 9999))
+        duration_mins = fastest.get("duration")
 
-        duration_secs = element["duration"]["value"]
-        distance_metres = element["distance"]["value"]
-
-        duration_mins = round(duration_secs / 60)
-        distance_km = round(distance_metres / 1000, 1)
+        # Sum leg distances (metres) to get total km
+        legs = fastest.get("legs", [])
+        total_m = sum(leg.get("distance", 0) for leg in legs)
+        distance_km = round(total_m / 1000, 1) if total_m else None
 
         return duration_mins, distance_km
 
     except Exception as e:
-        log.warning("Cycling lookup failed for (%s, %s): %s", lat, lng, e)
+        log.warning("TfL cycling lookup failed for (%s, %s): %s", lat, lng, e)
         return None, None
