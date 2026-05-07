@@ -151,4 +151,8 @@ def _parse_furnished(prop: dict) -> bool | None:
 
 def _extract_postcode(text: str) -> str | None:
     m = re.search(r"\b([A-Z]{1,2}\d{1,2}[A-Z]?\s*\d[A-Z]{2})\b", text.upper())
-    return m.group(1).upper() if m else None
+    if m:
+        return m.group(1).upper()
+    # Outcode fallback: "Bakery Close, Oval, London, SW9" → "SW9"
+    m2 = re.search(r",\s*([A-Z]{1,2}\d{1,2}[A-Z]?)(?:\s*$|,)", text.strip().upper())
+    return m2.group(1) if m2 else None

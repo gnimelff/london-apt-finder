@@ -70,7 +70,10 @@ def seed(listings: list[dict]):
 
 
 def _dedup_hash(listing: dict) -> str:
-    key = f"{listing.get('postcode', '')}|{listing.get('price_pcm', '')}|{listing.get('bedrooms', '')}"
+    # Normalise to outcode so "SW9" and "SW9 1AB" match across sites
+    postcode = listing.get("postcode") or ""
+    outcode = postcode.split()[0].upper() if postcode else ""
+    key = f"{outcode}|{listing.get('price_pcm', '')}|{listing.get('bedrooms', '')}"
     return hashlib.md5(key.encode()).hexdigest()
 
 
