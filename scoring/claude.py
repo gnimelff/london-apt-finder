@@ -37,7 +37,7 @@ Calculate the score by summing these adjustments — show your working:
   COMMUTE adjustment (commute_mins_tfl):
     ≤ 20 min  →  0
     21-30 min → -1
-    31-45 min → -2
+    31-40 min → -2
     > 40 min  → deal-breaker, score ≤ 3
 
   PRICE adjustment (price_pcm):
@@ -83,7 +83,7 @@ APARTMENT DATA:
 
 Return JSON in exactly this format:
 {{
-  "calculation": "10 + <commute adj> + <price adj> + <cycling adj> + <other adj> = <total>",
+  "calculation": "8 + <commute adj> + <price adj> + <cycling adj> + <other adj> = <total>",
   "score": <integer 1-10, must equal the total in calculation>,
   "rationale": "<2-3 sentence explanation focusing on the most important factors>",
   "area_summary": "<one short sentence describing the neighbourhood vibe, e.g. 'Quiet residential street in Herne Hill, popular with young professionals'>",
