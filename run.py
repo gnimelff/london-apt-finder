@@ -36,7 +36,7 @@ def run():
             raw_listings.extend(found)
         except Exception as e:
             log.error("%s scraper failed: %s", scraper_name, e)
-            send_alert(f"⚠️ {scraper_name} scraper failed: {e}")
+            send_alert(f"⚠️ {scraper_name} scraper failed")
 
     log.info("Total scraped: %d", len(raw_listings))
 
