@@ -37,25 +37,23 @@ Calculate the score using this formula — do the arithmetic explicitly:
   COMMUTE (commute_mins_tfl):
     ≤ 20 min  → -0
     21-30 min → -1
-    31-38 min → -2
-    39-45 min → -3
+    31-45 min → -2
     > 45 min  → deal-breaker, score ≤ 3
 
   PRICE (price_pcm vs £2,500 target):
-    ≤ £2,000  → -0
-    £2,001–£2,500 → -1
-    £2,501–£2,800 → -2
-    £2,801–£3,000 → -3
-    > £3,000  → deal-breaker, score ≤ 3
+    ≤ £2,200       → -0
+    £2,201–£2,500  → -1
+    £2,501–£3,000  → -2
+    > £3,000       → deal-breaker, score ≤ 3
 
   OTHER:
-    Unfurnished       → -1
-    Furnished unknown → -0.5 (round final score to nearest integer)
-    Basement flat     → deal-breaker, score ≤ 3
+    Unfurnished   → -1
+    Basement flat → deal-breaker, score ≤ 3
+    (furnished unknown = no deduction; missing data is not penalised)
 
-  Round the final total to the nearest integer. Cap at 10, floor at 1.
+  Cap at 10, floor at 1.
 
-Example: £2,975/mo, 39 min commute, furnished unknown → 10 - 3 - 3 - 0.5 = 3.5 → score 4.
+Example: £2,975/mo, 39 min commute, furnished unknown → 10 - 2 - 2 = 6.
 
 Rules:
 - Deal-breaker violations (basement, price > £3,000, commute > 45 min, studio) → score ≤ 3

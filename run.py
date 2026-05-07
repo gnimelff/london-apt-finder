@@ -89,6 +89,7 @@ def run():
             to_notify.append(listing)
 
     # 7. Send all high-scoring listings in one batched WhatsApp message
+    to_notify.sort(key=lambda l: l.get("score", 0), reverse=True)
     if to_notify:
         chunks_sent = send_batch(to_notify)
         if chunks_sent:

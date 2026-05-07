@@ -15,4 +15,4 @@ TELEGRAM_CHAT_IDS = [x.strip() for x in os.environ.get("TELEGRAM_CHAT_IDS", "").
 CALLMEBOT_API_KEY = os.environ.get("CALLMEBOT_API_KEY", "")
 WHATSAPP_PHONE = os.environ.get("WHATSAPP_PHONE", "")
 
-SCORE_THRESHOLD = int(os.environ.get("SCORE_THRESHOLD", "7"))
+SCORE_THRESHOLD = int(os.environ.get("SCORE_THRESHOLD", "5"))
