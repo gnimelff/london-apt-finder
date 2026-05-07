@@ -85,8 +85,13 @@ def scrape(max_price: int = 3200, min_beds: int = 1, max_pages: int = 3) -> list
                 prop_url = p.get("propertyUrl", f"/properties/{pid}")
 
                 # Combine summary + key features so Claude sees everything
+                # keyFeatures is a list of dicts: {"order":1, "description":"Furnished", ...}
                 summary = p.get("summary", "")
-                key_features = p.get("keyFeatures", []) or []
+                raw_features = p.get("keyFeatures", []) or []
+                key_features = [
+                    f["description"] for f in raw_features
+                    if isinstance(f, dict) and f.get("description")
+                ]
                 description = summary
                 if key_features:
                     description = summary + " | " + " | ".join(key_features)
@@ -127,11 +132,15 @@ def _extract_next_data(html: str) -> dict | None:
 
 
 def _parse_furnished(prop: dict) -> bool | None:
-    key_features = prop.get("keyFeatures", []) or []
+    raw_features = prop.get("keyFeatures", []) or []
+    key_feature_text = " ".join(
+        f["description"] for f in raw_features
+        if isinstance(f, dict) and f.get("description")
+    )
     text = " ".join([
         str(prop.get("summary", "")),
         str(prop.get("displayStatus", "")),
-        " ".join(key_features),
+        key_feature_text,
     ]).lower()
     if "unfurnished" in text:
         return False
