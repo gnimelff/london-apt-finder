@@ -83,6 +83,13 @@ def scrape(max_price: int = 3200, min_beds: int = 1, max_pages: int = 3) -> list
                 lng = loc.get("longitude") if isinstance(loc, dict) else None
                 prop_url = p.get("propertyUrl", f"/properties/{pid}")
 
+                # Combine summary + key features so Claude sees everything
+                summary = p.get("summary", "")
+                key_features = p.get("keyFeatures", []) or []
+                description = summary
+                if key_features:
+                    description = summary + " | " + " | ".join(key_features)
+
                 listings.append({
                     "site": "rightmove",
                     "listing_id": pid,
@@ -94,7 +101,7 @@ def scrape(max_price: int = 3200, min_beds: int = 1, max_pages: int = 3) -> list
                     "furnished": _parse_furnished(p),
                     "lat": lat,
                     "lng": lng,
-                    "description": p.get("summary", ""),
+                    "description": description,
                 })
             except Exception as e:
                 log.debug("Rightmove property parse error: %s", e)
@@ -119,13 +126,15 @@ def _extract_next_data(html: str) -> dict | None:
 
 
 def _parse_furnished(prop: dict) -> bool | None:
+    key_features = prop.get("keyFeatures", []) or []
     text = " ".join([
         str(prop.get("summary", "")),
         str(prop.get("displayStatus", "")),
+        " ".join(key_features),
     ]).lower()
     if "unfurnished" in text:
         return False
-    if "furnished" in text:
+    if "furnished" in text:  # catches "furnished", "part furnished", "fully furnished"
         return True
     return None
 
