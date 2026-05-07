@@ -87,9 +87,12 @@ def _format_listing(listing: dict) -> str:
     ]
 
     # Deal flags — one per line, skip data-gap noise
+    commute_mins = listing.get("commute_mins")
+    fast_commute = commute_mins is not None and commute_mins < 30
     for flag in (listing.get("deal_flags") or []):
         if not _is_data_gap(flag):
-            lines.append(f"{_flag_icon(flag)} {_e(flag)}")
+            icon = "✅" if (fast_commute and "commute" in flag.lower()) else _flag_icon(flag)
+            lines.append(f"{icon} {_e(flag)}")
 
     if url:
         lines.append(url)
