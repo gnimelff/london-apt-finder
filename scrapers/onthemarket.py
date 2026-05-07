@@ -22,12 +22,21 @@ def scrape(max_price: int = 3200, min_beds: int = 1, max_pages: int = 3) -> list
     listings = []
 
     for page in range(1, max_pages + 1):
-        params = {
-            "min-bedrooms": min_beds,
-            "max-price": max_price,
-            "page": page,
-            "shared-accommodation": "false",
-        }
+        params = [
+            ("min-bedrooms", min_beds),
+            ("max-price", max_price),
+            ("prop-types", "bungalows"),
+            ("prop-types", "detached"),
+            ("prop-types", "flats-apartments"),
+            ("prop-types", "semi-detached"),
+            ("prop-types", "terraced"),
+            ("recently-added", "24-hours"),
+            ("retirement", "false"),
+            ("shared", "false"),
+            ("sort-field", "update_date"),
+            ("student", "false"),
+            ("page", page),
+        ]
 
         try:
             resp = fetch(SEARCH_URL, params=params)
