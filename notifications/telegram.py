@@ -61,6 +61,27 @@ def _format_listing(listing: dict) -> str:
     ]
     if area:
         lines.append(_e(area))
+
+    # Deal flags from Claude — ✅ for positives, ⚠️ for negatives
+    deal_flags = listing.get("deal_flags") or []
+    if deal_flags:
+        _POSITIVE_KEYWORDS = {
+            "furnished", "below budget", "short commute", "low crime",
+            "above ground", "top floor", "good", "epc a", "epc b", "epc c",
+            "bright", "modern", "garden", "balcony", "quiet",
+        }
+        chips = []
+        for flag in deal_flags:
+            icon = "✅" if any(p in flag.lower() for p in _POSITIVE_KEYWORDS) else "⚠️"
+            chips.append(f"{icon} {_e(flag)}")
+        lines.append(" · ".join(chips))
+
+    # One-line rationale snippet from Claude
+    rationale = listing.get("rationale", "")
+    if rationale:
+        snippet = rationale[:120] + ("…" if len(rationale) > 120 else "")
+        lines.append(f"💬 {_e(snippet)}")
+
     if url:
         # URLs don't need escaping in HTML mode (Telegram renders them as links)
         lines.append(url)
@@ -132,3 +153,11 @@ def send_batch(listings: list[dict]) -> int:
                 sent += 1
 
     return sent
+
+
+def send_alert(text: str) -> None:
+    """Send a plain-text alert (e.g. scraper failure) to all configured chat IDs."""
+    if not TELEGRAM_CHAT_IDS:
+        return
+    for chat_id in TELEGRAM_CHAT_IDS:
+        _send_raw(chat_id.strip(), html.escape(text))

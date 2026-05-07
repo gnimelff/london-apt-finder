@@ -8,7 +8,7 @@ from db import init_db, is_empty, seed, filter_new, save_listing, mark_notified
 from scrapers import openrent, rightmove, onthemarket
 from enrichment.pipeline import enrich
 from scoring.claude import score
-from notifications.telegram import send_batch
+from notifications.telegram import send_batch, send_alert
 from config import SCORE_THRESHOLD
 
 logging.basicConfig(
@@ -36,6 +36,7 @@ def run():
             raw_listings.extend(found)
         except Exception as e:
             log.error("%s scraper failed: %s", scraper_name, e)
+            send_alert(f"⚠️ {scraper_name} scraper failed: {e}")
 
     log.info("Total scraped: %d", len(raw_listings))
 
