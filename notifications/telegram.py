@@ -88,7 +88,9 @@ def _format_listing(listing: dict) -> str:
     # Deal flags — one per line, skip stats duplicates and data-gap noise
     for flag in (listing.get("deal_flags") or []):
         if not _should_skip(flag):
-            lines.append(f"{_flag_icon(flag)} {_e(flag)}")
+            # Strip leading ✓/✗/? markers Claude embeds — we replace them with our emoji
+            clean = flag.lstrip("✓✗? ").strip()
+            lines.append(f"{_flag_icon(flag)} {_e(clean)}")
 
     if url:
         lines.append(url)
