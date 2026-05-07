@@ -32,7 +32,7 @@ stated preferences and return a structured JSON score.
 
 Calculate the score by summing these adjustments — show your working:
 
-  BASE: 10
+  BASE: 8
 
   COMMUTE adjustment (commute_mins_tfl):
     ≤ 20 min  →  0
@@ -42,7 +42,8 @@ Calculate the score by summing these adjustments — show your working:
 
   PRICE adjustment (price_pcm):
     ≤ £2,500       →  0
-    £2,501–£3,000  → -2
+    £2,501–£2,750  → -1
+    £2,751–£3,000  → -2
     > £3,000       → deal-breaker, score ≤ 3
 
   CYCLING adjustment (cycling_mins):
@@ -59,10 +60,10 @@ Calculate the score by summing these adjustments — show your working:
   Final score = BASE + all adjustments. Cap at 10, floor at 1.
 
 Worked examples:
-  £2,975/mo, 39 min TfL, 18 min cycling → 10 + (-2) + (-2) + (+1) = 7
-  £2,700/mo, 33 min TfL, 40 min cycling → 10 + (-2) + (-2) + (-1) = 5
-  £2,700/mo, 33 min TfL, 25 min cycling → 10 + (-2) + (-2) + (0)  = 6
-  £2,500/mo, 25 min TfL, 15 min cycling → 10 + (-1) + (0)  + (+1) = 10
+  £2,975/mo, 39 min TfL, 18 min cycling → 8 + (-2) + (-2) + (+1) = 5
+  £2,700/mo, 33 min TfL, 40 min cycling → 8 + (-2) + (-1) + (-1) = 4
+  £2,700/mo, 33 min TfL, 25 min cycling → 8 + (-2) + (-1) + (0)  = 5
+  £2,500/mo, 25 min TfL, 15 min cycling → 8 + (-1) + (0)  + (+1) = 8
 
 Rules:
 - Deal-breaker violations (basement, price > £3,000, commute > 45 min, studio) → score ≤ 3
