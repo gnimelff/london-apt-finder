@@ -56,6 +56,11 @@ Calculate the score by summing these adjustments — show your working:
   OTHER adjustments:
     Unfurnished   → -1
     Basement flat → deal-breaker, score ≤ 3
+    New build or recently renovated/refurbished → +1
+      (only award this if the description clearly signals it: explicit mention of "new build",
+       "newly refurbished", "recently renovated", "completed [year]", or strong implicit signals
+       like underfloor heating, integrated appliances, smart home, named new-build development.
+       Do NOT award for vague words like "modern" or "contemporary" alone.)
     (furnished unknown = 0; missing data is never penalised)
 
   Final score = BASE + all adjustments. Cap at 10, floor at 1.
