@@ -11,8 +11,6 @@ import re
 import logging
 from enrichment.geocode import postcode_to_latlon
 from enrichment.tfl import commute_minutes
-from enrichment.crime import crime_count_nearby
-from enrichment.epc import epc_rating
 from enrichment.cycling import cycling_commute
 
 log = logging.getLogger(__name__)
@@ -83,21 +81,15 @@ def enrich(listing: dict) -> dict:
     # 2. TfL commute time + cycling time
     if lat and lng:
         listing["commute_mins"] = commute_minutes(lat, lng)
-        listing["crime_count"] = crime_count_nearby(lat, lng)
         cycling_mins, cycling_km = cycling_commute(lat, lng)
         listing["cycling_mins"] = cycling_mins
         listing["cycling_km"] = cycling_km
     else:
         listing["commute_mins"] = None
-        listing["crime_count"] = None
         listing["cycling_mins"] = None
         listing["cycling_km"] = None
 
-    # 3. EPC rating (needs postcode)
-    postcode = listing.get("postcode")
-    listing["epc_rating"] = epc_rating(postcode) if postcode else None
-
-    # 4. Floor level / basement detection (text-only, no API)
+    # 3. Floor level / basement detection (text-only, no API)
     _extract_floor_info(listing)
 
     return listing

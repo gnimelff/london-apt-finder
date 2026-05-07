@@ -75,7 +75,6 @@ def score(listing: dict) -> dict:
         "commute_mins_tfl": listing.get("commute_mins"),
         "cycling_mins": listing.get("cycling_mins"),
         "cycling_km": listing.get("cycling_km"),
-        "epc_rating": listing.get("epc_rating"),
         "is_basement": listing.get("is_basement", False),
         "floor_number": listing.get("floor_number"),  # -1=basement/lower-ground, 0=ground, 1=first, 99=top, None=unknown
         "description": (listing.get("description") or "")[:1500],

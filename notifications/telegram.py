@@ -73,10 +73,6 @@ def _format_listing(listing: dict) -> str:
     cycling_mins = listing.get("cycling_mins")
     cycling_km = listing.get("cycling_km")
     cycling_str = f"🚴 {cycling_mins} min ({cycling_km} km)" if cycling_mins and cycling_km else None
-    epc = listing.get("epc_rating")
-    epc_str = f"EPC {epc}" if epc else "EPC unknown"
-    crime = listing.get("crime_count")
-    crime_str = f"{crime} crimes/mo" if crime is not None else "crime N/A"
     url = listing.get("url", "")
 
     commute_line = _e(commute_str)
@@ -86,7 +82,7 @@ def _format_listing(listing: dict) -> str:
     lines = [
         f"{_b(f'Score {score}/10')} — {_e(str(listing.get('bedrooms', '?')))}-bed",
         _b(address),
-        f"{_b(price_str)} | {commute_line} | {_e(epc_str)} | {_e(crime_str)}",
+        f"{_b(price_str)} | {commute_line}",
     ]
 
     # Deal flags — one per line, skip stats duplicates and data-gap noise
