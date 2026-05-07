@@ -13,6 +13,7 @@ Note: Uses HTML parse mode (not Markdown) because Rightmove URLs contain
 underscores (channel=RES_LET) which break Telegram's Markdown italic parsing.
 """
 import html
+import re
 import time
 import logging
 import httpx
@@ -66,6 +67,10 @@ def _flag_icon(flag: str) -> str:
 def _format_listing(listing: dict) -> str:
     score = listing.get("score", "?")
     address = listing.get("address", "Unknown address")
+    # Strip ", London" when it's a standalone city component (not part of "London Road" etc.)
+    # Strip ", London" when it's a standalone city label (not "London Road" etc.)
+    # Handles: ", London, SE1" / ", London SE1" / ", London" at end
+    address = re.sub(r",\s*London(?=,|$|\s+[A-Z]{1,2}\d)", "", address).strip(", ")
     price = listing.get("price_pcm")
     price_str = f"£{price:,}/mo" if price else "price unknown"
     commute = listing.get("commute_mins")
