@@ -26,6 +26,7 @@ def scrape(max_price: int = 3200, min_beds: int = 1, max_pages: int = 3) -> list
             "min-bedrooms": min_beds,
             "max-price": max_price,
             "page": page,
+            "shared-accommodation": "false",
         }
 
         try:

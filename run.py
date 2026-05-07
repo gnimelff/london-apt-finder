@@ -91,6 +91,13 @@ def run():
         log.info("=== Done. No listings above threshold ===")
 
 
+_SHARED_KEYWORDS = {
+    "room in", "room only", "house share", "houseshare", "house-share",
+    "flat share", "flatshare", "flat-share", "shared house", "shared flat",
+    "shared accommodation", "en suite", "ensuite",
+}
+
+
 def _pre_filter(listing: dict) -> bool:
     """Quick check to skip obvious mismatches before spending enrichment API calls."""
     # Skip incomplete listings
@@ -106,6 +113,16 @@ def _pre_filter(listing: dict) -> bool:
         return False
     if beds is not None and beds < 1:
         return False
+
+    # Exclude rooms in shared flats — check address + description
+    combined = " ".join([
+        str(listing.get("address", "")),
+        str(listing.get("description", "")),
+    ]).lower()
+    if any(kw in combined for kw in _SHARED_KEYWORDS):
+        log.info("Skipping shared/room listing: %s", listing.get("address"))
+        return False
+
     return True
 
 

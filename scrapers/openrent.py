@@ -48,6 +48,7 @@ def scrape(max_price: int = 3200, min_beds: int = 1, max_results: int = 150) -> 
     lngs = arrays.get("PROPERTYLISTLONGITUDES", [])
     furnished_arr = arrays.get("furnished", [])
     is_studio = arrays.get("isstudio", [])
+    is_shared = arrays.get("isshared", [])
     is_live = arrays.get("islivelistBool", [])
 
     log.info("OpenRent: %d total properties in page", len(ids))
@@ -63,11 +64,14 @@ def scrape(max_price: int = 3200, min_beds: int = 1, max_results: int = 150) -> 
         price = _get(prices, i)
         beds = _get(bedrooms, i)
         studio = _get(is_studio, i, 0)
+        shared = _get(is_shared, i, 0)
         if price and price > max_price:
             continue
         if beds is not None and beds < min_beds:
             continue
         if studio:
+            continue
+        if shared:
             continue
         candidates.append({
             "idx": i,

@@ -27,7 +27,7 @@ def commute_minutes(lat: float, lng: float) -> int | None:
             url,
             params={
                 "app_key": TFL_API_KEY,
-                "mode": "tube,dlr,overground,elizabeth-line,bus,walking,national-rail",
+                "mode": "tube,dlr,overground,elizabeth-line,national-rail,walking",
                 "timeIs": "Arriving",
                 "time": "0900",
             },

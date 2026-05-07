@@ -8,7 +8,11 @@ Setup (one-time):
      to get your chat_id
   3. Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_IDS in .env / GitHub secrets
      TELEGRAM_CHAT_IDS is a comma-separated list for multiple recipients
+
+Note: Uses HTML parse mode (not Markdown) because Rightmove URLs contain
+underscores (channel=RES_LET) which break Telegram's Markdown italic parsing.
 """
+import html
 import time
 import logging
 import httpx
@@ -17,6 +21,16 @@ from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_IDS
 log = logging.getLogger(__name__)
 
 MAX_CHARS = 4000  # Telegram's limit is 4096
+
+
+def _b(text: str) -> str:
+    """Wrap text in HTML bold tags, escaping any HTML special chars."""
+    return f"<b>{html.escape(str(text))}</b>"
+
+
+def _e(text: str) -> str:
+    """Escape HTML special chars in plain text."""
+    return html.escape(str(text))
 
 
 def _format_listing(listing: dict) -> str:
@@ -36,18 +50,19 @@ def _format_listing(listing: dict) -> str:
     area = listing.get("area_summary", "")
     url = listing.get("url", "")
 
-    commute_line = commute_str
+    commute_line = _e(commute_str)
     if cycling_str:
-        commute_line += f" | {cycling_str}"
+        commute_line += f" | {_e(cycling_str)}"
 
     lines = [
-        f"*Score {score}/10* — {listing.get('bedrooms', '?')}-bed",
-        f"*{address}*",
-        f"*{price_str}* | {commute_line} | {epc_str} | {crime_str}",
+        f"{_b(f'Score {score}/10')} — {_e(str(listing.get('bedrooms', '?')))}-bed",
+        _b(address),
+        f"{_b(price_str)} | {commute_line} | {_e(epc_str)} | {_e(crime_str)}",
     ]
     if area:
-        lines.append(area)
+        lines.append(_e(area))
     if url:
+        # URLs don't need escaping in HTML mode (Telegram renders them as links)
         lines.append(url)
 
     return "\n".join(lines)
@@ -61,7 +76,7 @@ def _send_raw(chat_id: str, text: str) -> bool:
             json={
                 "chat_id": chat_id,
                 "text": text,
-                "parse_mode": "Markdown",
+                "parse_mode": "HTML",
                 "disable_web_page_preview": True,
             },
             timeout=15,
@@ -86,7 +101,7 @@ def send_batch(listings: list[dict]) -> int:
         return 0
 
     divider = "\n---\n"
-    header = f"🏠 *{len(listings)} new listing{'s' if len(listings) != 1 else ''}*\n---\n"
+    header = f"🏠 <b>{len(listings)} new listing{'s' if len(listings) != 1 else ''}</b>\n---\n"
     blocks = [_format_listing(l) for l in listings]
 
     # Build chunks within MAX_CHARS
