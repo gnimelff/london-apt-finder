@@ -47,9 +47,11 @@ def run():
         log.info("First run — seeded %d listings into seen.db. Will process new ones next run.", len(raw_listings))
         return
 
-    # 3. Deduplicate
+    # 3. Deduplicate against DB, then cross-site proximity dedup
     new_listings = filter_new(raw_listings)
     log.info("New (unseen): %d", len(new_listings))
+    new_listings = _dedup_cross_site(new_listings)
+    log.info("After cross-site dedup: %d", len(new_listings))
 
     if not new_listings:
         log.info("Nothing new. Done.")
@@ -133,6 +135,54 @@ def _pre_filter(listing: dict) -> bool:
         return False
 
     return True
+
+
+def _dedup_cross_site(listings: list[dict]) -> list[dict]:
+    """
+    Remove duplicates listed on multiple sites using lat/lng proximity.
+    Two listings are the same property if they have identical beds, price within £100,
+    and coordinates within ~100m (0.001 degrees). Keeps the first site encountered
+    (order: OpenRent → Rightmove → OTM, as scraped).
+    """
+    SITE_PRIORITY = {"openrent": 0, "rightmove": 1, "otm": 2}
+    # Sort so higher-priority sites win when we keep the first seen
+    listings = sorted(listings, key=lambda l: SITE_PRIORITY.get(l.get("site", ""), 9))
+
+    kept = []
+    for listing in listings:
+        lat = listing.get("lat")
+        lng = listing.get("lng")
+        price = listing.get("price_pcm") or 0
+        beds = listing.get("bedrooms")
+
+        if lat is None or lng is None:
+            kept.append(listing)
+            continue
+
+        duplicate = False
+        for other in kept:
+            olat = other.get("lat")
+            olng = other.get("lng")
+            if olat is None or olng is None:
+                continue
+            if (
+                abs(lat - olat) < 0.001 and       # ~111m latitude
+                abs(lng - olng) < 0.0015 and       # ~100m longitude at 51.5°N
+                beds == other.get("bedrooms") and
+                abs(price - (other.get("price_pcm") or 0)) <= 100
+            ):
+                log.info(
+                    "Cross-site duplicate: %s [%s] matches %s [%s]",
+                    listing.get("address"), listing.get("site"),
+                    other.get("address"), other.get("site"),
+                )
+                duplicate = True
+                break
+
+        if not duplicate:
+            kept.append(listing)
+
+    return kept
 
 
 if __name__ == "__main__":
