@@ -33,6 +33,33 @@ def _e(text: str) -> str:
     return html.escape(str(text))
 
 
+# Keywords that indicate a flag is about missing/unavailable data — skip these
+_DATA_GAP_KEYWORDS = {
+    "missing", "not specified", "cannot verify", "cannot confirm",
+    "unable to assess", "not available", "not confirmed",
+    "cannot fully confirm", "no data", "not found",
+}
+
+
+def _is_data_gap(flag: str) -> bool:
+    fl = flag.lower()
+    return any(kw in fl for kw in _DATA_GAP_KEYWORDS)
+
+
+def _flag_icon(flag: str) -> str:
+    """Pick ✅/⚠️ based on ✓/✗ already embedded by Claude; fallback to keyword scan."""
+    if "✓" in flag:
+        return "✅"
+    if "✗" in flag:
+        return "⚠️"
+    _POSITIVE = {
+        "furnished", "below budget", "short commute", "low crime",
+        "above ground", "top floor", "good", "epc a", "epc b", "epc c",
+        "bright", "modern", "garden", "balcony", "quiet",
+    }
+    return "✅" if any(p in flag.lower() for p in _POSITIVE) else "⚠️"
+
+
 def _format_listing(listing: dict) -> str:
     score = listing.get("score", "?")
     address = listing.get("address", "Unknown address")
@@ -47,7 +74,6 @@ def _format_listing(listing: dict) -> str:
     epc_str = f"EPC {epc}" if epc else "EPC unknown"
     crime = listing.get("crime_count")
     crime_str = f"{crime} crimes/mo" if crime is not None else "crime N/A"
-    area = listing.get("area_summary", "")
     url = listing.get("url", "")
 
     commute_line = _e(commute_str)
@@ -59,31 +85,13 @@ def _format_listing(listing: dict) -> str:
         _b(address),
         f"{_b(price_str)} | {commute_line} | {_e(epc_str)} | {_e(crime_str)}",
     ]
-    if area:
-        lines.append(_e(area))
 
-    # Deal flags from Claude — ✅ for positives, ⚠️ for negatives
-    deal_flags = listing.get("deal_flags") or []
-    if deal_flags:
-        _POSITIVE_KEYWORDS = {
-            "furnished", "below budget", "short commute", "low crime",
-            "above ground", "top floor", "good", "epc a", "epc b", "epc c",
-            "bright", "modern", "garden", "balcony", "quiet",
-        }
-        chips = []
-        for flag in deal_flags:
-            icon = "✅" if any(p in flag.lower() for p in _POSITIVE_KEYWORDS) else "⚠️"
-            chips.append(f"{icon} {_e(flag)}")
-        lines.append(" · ".join(chips))
-
-    # One-line rationale snippet from Claude
-    rationale = listing.get("rationale", "")
-    if rationale:
-        snippet = rationale[:120] + ("…" if len(rationale) > 120 else "")
-        lines.append(f"💬 {_e(snippet)}")
+    # Deal flags — one per line, skip data-gap noise
+    for flag in (listing.get("deal_flags") or []):
+        if not _is_data_gap(flag):
+            lines.append(f"{_flag_icon(flag)} {_e(flag)}")
 
     if url:
-        # URLs don't need escaping in HTML mode (Telegram renders them as links)
         lines.append(url)
 
     return "\n".join(lines)
