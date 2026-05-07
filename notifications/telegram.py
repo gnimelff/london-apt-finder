@@ -79,8 +79,11 @@ def _format_listing(listing: dict) -> str:
     if cycling_str:
         commute_line += f" | {_e(cycling_str)}"
 
+    borough = listing.get("borough", "")
+    borough_str = f" — {_e(borough)}" if borough else ""
+
     lines = [
-        f"{_b(f'Score {score}/10')} — {_e(str(listing.get('bedrooms', '?')))}-bed",
+        f"{_b(f'Score {score}/10')} — {_e(str(listing.get('bedrooms', '?')))}-bed{borough_str}",
         _b(address),
         f"{_b(price_str)} | {commute_line}",
     ]

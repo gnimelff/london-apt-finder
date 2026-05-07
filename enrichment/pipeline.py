@@ -9,7 +9,7 @@ This saves geocoding API calls for the majority of listings.
 """
 import re
 import logging
-from enrichment.geocode import postcode_to_latlon
+from enrichment.geocode import postcode_to_latlon, postcode_to_borough
 from enrichment.tfl import commute_minutes
 from enrichment.cycling import cycling_commute
 
@@ -89,7 +89,10 @@ def enrich(listing: dict) -> dict:
         listing["cycling_mins"] = None
         listing["cycling_km"] = None
 
-    # 3. Floor level / basement detection (text-only, no API)
+    # 3. Borough from postcode (full postcode only)
+    listing["borough"] = postcode_to_borough(listing.get("postcode"))
+
+    # 4. Floor level / basement detection (text-only, no API)
     _extract_floor_info(listing)
 
     return listing

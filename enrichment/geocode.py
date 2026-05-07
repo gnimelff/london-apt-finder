@@ -37,6 +37,25 @@ def postcode_to_latlon(postcode: str) -> tuple[float, float] | None:
     return None
 
 
+def postcode_to_borough(postcode: str) -> str | None:
+    """Return the London borough (admin_district) for a full postcode, or None."""
+    if not postcode:
+        return None
+    clean = postcode.strip().upper().replace(" ", "")
+    if not _FULL_POSTCODE_RE.match(clean):
+        return None
+    try:
+        resp = httpx.get(
+            f"https://api.postcodes.io/postcodes/{clean}",
+            timeout=10,
+        )
+        resp.raise_for_status()
+        return resp.json().get("result", {}).get("admin_district") or None
+    except Exception as e:
+        log.debug("borough lookup failed for %s: %s", clean, e)
+    return None
+
+
 def _lookup_full(postcode_no_space: str) -> tuple[float, float] | None:
     try:
         resp = httpx.get(
