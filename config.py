@@ -9,7 +9,11 @@ EPC_API_KEY = os.environ.get("EPC_API_KEY", "")  # base64(email:key) from epc.op
 
 GOOGLE_MAPS_API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY", "")
 
-CALLMEBOT_API_KEY = os.environ["CALLMEBOT_API_KEY"]
-WHATSAPP_PHONE = os.environ["WHATSAPP_PHONE"]  # format: 447xxxxxxxxx (no + prefix)
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHAT_IDS = [x.strip() for x in os.environ.get("TELEGRAM_CHAT_IDS", "").split(",") if x.strip()]
+
+# Legacy CallMeBot (kept for reference)
+CALLMEBOT_API_KEY = os.environ.get("CALLMEBOT_API_KEY", "")
+WHATSAPP_PHONE = os.environ.get("WHATSAPP_PHONE", "")
 
 SCORE_THRESHOLD = int(os.environ.get("SCORE_THRESHOLD", "7"))

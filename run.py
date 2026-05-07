@@ -8,7 +8,7 @@ from db import init_db, is_empty, seed, filter_new, save_listing, mark_notified
 from scrapers import openrent, rightmove, onthemarket
 from enrichment.pipeline import enrich
 from scoring.claude import score
-from notifications.whatsapp import send_batch
+from notifications.telegram import send_batch
 from config import SCORE_THRESHOLD
 
 logging.basicConfig(
