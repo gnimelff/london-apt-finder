@@ -69,23 +69,23 @@ def _format_listing(listing: dict) -> str:
     price = listing.get("price_pcm")
     price_str = f"£{price:,}/mo" if price else "price unknown"
     commute = listing.get("commute_mins")
-    commute_str = f"{commute} min TfL" if commute else "TfL unknown"
+    commute_str = f"🚇 {commute}" if commute else "🚇 ?"
     cycling_mins = listing.get("cycling_mins")
     cycling_km = listing.get("cycling_km")
-    cycling_str = f"🚴 {cycling_mins} min ({cycling_km} km)" if cycling_mins and cycling_km else None
+    cycling_str = f"🚴 {cycling_mins} ({cycling_km} km)" if cycling_mins and cycling_km else None
     url = listing.get("url", "")
-
-    commute_line = _e(commute_str)
-    if cycling_str:
-        commute_line += f" | {_e(cycling_str)}"
 
     borough = listing.get("borough", "")
     borough_str = f" — {_e(borough)}" if borough else ""
 
+    stats = f"{_b(price_str)} | {_e(commute_str)}"
+    if cycling_str:
+        stats += f" | {_e(cycling_str)}"
+
     lines = [
         f"{_b(f'Score {score}/10')} — {_e(str(listing.get('bedrooms', '?')))}-bed{borough_str}",
         _b(address),
-        f"{_b(price_str)} | {commute_line}",
+        stats,
     ]
 
     # Deal flags — one per line, skip stats duplicates and data-gap noise
