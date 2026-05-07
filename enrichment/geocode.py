@@ -38,21 +38,41 @@ def postcode_to_latlon(postcode: str) -> tuple[float, float] | None:
 
 
 def postcode_to_borough(postcode: str) -> str | None:
-    """Return the London borough (admin_district) for a full postcode, or None."""
+    """Return the London borough for a full or partial postcode, or None."""
     if not postcode:
         return None
-    clean = postcode.strip().upper().replace(" ", "")
-    if not _FULL_POSTCODE_RE.match(clean):
-        return None
-    try:
-        resp = httpx.get(
-            f"https://api.postcodes.io/postcodes/{clean}",
-            timeout=10,
-        )
-        resp.raise_for_status()
-        return resp.json().get("result", {}).get("admin_district") or None
-    except Exception as e:
-        log.debug("borough lookup failed for %s: %s", clean, e)
+    clean = postcode.strip().upper()
+
+    # Full postcode — single definitive borough
+    if _FULL_POSTCODE_RE.match(clean):
+        try:
+            resp = httpx.get(
+                f"https://api.postcodes.io/postcodes/{clean.replace(' ', '')}",
+                timeout=10,
+            )
+            resp.raise_for_status()
+            district = resp.json().get("result", {}).get("admin_district")
+            if district:
+                return district
+        except Exception as e:
+            log.debug("borough lookup failed for %s: %s", clean, e)
+
+    # Partial/outcode (e.g. SE1, SW8, WC2N) — returns array, take first
+    outcode = clean.split()[0]
+    m = re.match(r"^([A-Z]{1,2}\d{1,2}[A-Z]?)", outcode)
+    if m:
+        try:
+            resp = httpx.get(
+                f"https://api.postcodes.io/outcodes/{m.group(1)}",
+                timeout=10,
+            )
+            resp.raise_for_status()
+            districts = resp.json().get("result", {}).get("admin_district", [])
+            if districts:
+                return districts[0]
+        except Exception as e:
+            log.debug("outcode borough lookup failed for %s: %s", m.group(1), e)
+
     return None
 
 
