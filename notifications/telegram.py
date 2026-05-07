@@ -108,6 +108,12 @@ def _format_listing(listing: dict) -> str:
                 if sep in clean:
                     clean = clean.split(sep)[0].strip()
                     break
+            # Strip common filler suffixes Claude appends
+            for suffix in (" as preferred", " as required", " requirement",
+                           " exceeds 1-bedroom minimum", " exceeds minimum",
+                           " confirmed", " not stated", " not specified"):
+                if clean.lower().endswith(suffix):
+                    clean = clean[:-len(suffix)].strip()
             lines.append(f"{_flag_icon(flag)} {_e(clean)}")
 
     if url:
