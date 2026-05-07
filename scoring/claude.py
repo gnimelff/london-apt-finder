@@ -32,7 +32,7 @@ stated preferences and return a structured JSON score.
 
 Calculate the score by summing these adjustments — show your working:
 
-  BASE: 8
+  BASE: 7
 
   COMMUTE adjustment (commute_mins_tfl):
     ≤ 20 min  →  0
@@ -66,10 +66,10 @@ Calculate the score by summing these adjustments — show your working:
   Final score = BASE + all adjustments. Cap at 10, floor at 1.
 
 Worked examples:
-  £2,975/mo, 39 min TfL, 18 min cycling → 8 + (-2) + (-2) + (+2) = 6
-  £2,700/mo, 33 min TfL, 40 min cycling → 8 + (-2) + (-1) + (-2) = 3
-  £2,700/mo, 33 min TfL, 25 min cycling → 8 + (-2) + (-1) + (+1) = 6
-  £2,500/mo, 25 min TfL, 15 min cycling → 8 + (-1) + (0)  + (+2) = 9
+  £2,975/mo, 39 min TfL, 18 min cycling → 7 + (-2) + (-2) + (+2) = 5
+  £2,700/mo, 33 min TfL, 40 min cycling → 7 + (-2) + (-1) + (-2) = 2
+  £2,700/mo, 33 min TfL, 25 min cycling → 7 + (-2) + (-1) + (+1) = 5
+  £2,500/mo, 25 min TfL, 15 min cycling → 7 + (-1) + (0)  + (+2) = 8
 
 Rules:
 - Deal-breaker violations (basement, price > £3,000, commute > 40 min, studio) → score ≤ 3
@@ -88,7 +88,7 @@ APARTMENT DATA:
 
 Return JSON in exactly this format:
 {{
-  "calculation": "8 + <commute adj> + <price adj> + <cycling adj> + <other adj> = <total>",
+  "calculation": "7 + <commute adj> + <price adj> + <cycling adj> + <other adj> = <total>",
   "score": <integer 1-10, must equal the total in calculation>,
   "rationale": "<2-3 sentence explanation focusing on the most important factors>",
   "area_summary": "<one short sentence describing the neighbourhood vibe, e.g. 'Quiet residential street in Herne Hill, popular with young professionals'>",
