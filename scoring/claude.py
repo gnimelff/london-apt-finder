@@ -41,8 +41,7 @@ Calculate the score using this formula — do the arithmetic explicitly:
     > 45 min  → deal-breaker, score ≤ 3
 
   PRICE (price_pcm vs £2,500 target):
-    ≤ £2,200       → -0
-    £2,201–£2,500  → -1
+    ≤ £2,500       → -0  (anything at or under budget is equally fine)
     £2,501–£3,000  → -2
     > £3,000       → deal-breaker, score ≤ 3
 
@@ -53,7 +52,8 @@ Calculate the score using this formula — do the arithmetic explicitly:
 
   Cap at 10, floor at 1.
 
-Example: £2,975/mo, 39 min commute, furnished unknown → 10 - 2 - 2 = 6.
+Example: £2,975/mo, 39 min commute, furnished unknown → 10 - 2 (commute) - 2 (over budget) = 6.
+Example: £1,500/mo, 25 min commute, furnished → 10 - 1 (commute) - 0 (under budget) = 9.
 
 Rules:
 - Deal-breaker violations (basement, price > £3,000, commute > 45 min, studio) → score ≤ 3
