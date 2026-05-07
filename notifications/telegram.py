@@ -93,28 +93,14 @@ def _format_listing(listing: dict) -> str:
         stats,
     ]
 
-    # Deal flags — one per line, skip stats duplicates and data-gap noise
-    for flag in (listing.get("deal_flags") or []):
-        if not _should_skip(flag):
-            # Strip leading ✓/✗/? markers and verbose prefixes Claude sometimes adds
-            clean = flag.lstrip("✓✗? ").strip()
-            for prefix in ("Strong: ", "Strong:", "DATA GAP: ", "DATA GAP:", "Note: ", "Note:",
-                           "Positive: ", "Negative: ", "Warning: "):
-                if clean.startswith(prefix):
-                    clean = clean[len(prefix):].strip()
-                    break
-            # Truncate at " — " or " – " to drop "unable to confirm..." tails
-            for sep in (" — ", " – ", " - "):
-                if sep in clean:
-                    clean = clean.split(sep)[0].strip()
-                    break
-            # Strip common filler suffixes Claude appends
-            for suffix in (" as preferred", " as required", " requirement",
-                           " exceeds 1-bedroom minimum", " exceeds minimum",
-                           " confirmed", " not stated", " not specified"):
-                if clean.lower().endswith(suffix):
-                    clean = clean[:-len(suffix)].strip()
-            lines.append(f"{_flag_icon(flag)} {_e(clean)}")
+    # Furnished status only
+    furnished = listing.get("furnished")
+    if furnished is True:
+        lines.append("✅ Furnished")
+    elif furnished is False:
+        lines.append("⚠️ Not furnished")
+    else:
+        lines.append("❓ Furnished status unknown")
 
     if url:
         lines.append(url)
