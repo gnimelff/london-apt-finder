@@ -33,31 +33,34 @@ def _e(text: str) -> str:
     return html.escape(str(text))
 
 
-# Keywords that indicate a flag is about missing/unavailable data — skip these
-_DATA_GAP_KEYWORDS = {
-    "missing", "not specified", "cannot verify", "cannot confirm",
-    "unable to assess", "not available", "not confirmed",
+# Skip flags about fields already shown in the stats line, or pure data-gap noise
+_SKIP_IF_CONTAINS = {
+    # Already visible in stats: price, commute, EPC, crime, cycling
+    "commute", "budget", "price", "pcm", "epc", "crime", "cycling", "bicycle",
+    # Data gaps — nothing actionable
+    "missing", "not provided", "unable to verify", "unable to assess",
+    "not available", "not confirmed", "cannot verify", "cannot confirm",
     "cannot fully confirm", "no data", "not found",
 }
 
 
-def _is_data_gap(flag: str) -> bool:
+def _should_skip(flag: str) -> bool:
     fl = flag.lower()
-    return any(kw in fl for kw in _DATA_GAP_KEYWORDS)
+    return any(kw in fl for kw in _SKIP_IF_CONTAINS)
 
 
 def _flag_icon(flag: str) -> str:
-    """Pick ✅/⚠️ based on ✓/✗ already embedded by Claude; fallback to keyword scan."""
+    """✅ for ✓, ⚠️ for ✗, ❓ for ? or unclear wording."""
     if "✓" in flag:
         return "✅"
     if "✗" in flag:
         return "⚠️"
-    _POSITIVE = {
-        "furnished", "below budget", "short commute", "low crime",
-        "above ground", "top floor", "good", "epc a", "epc b", "epc c",
-        "bright", "modern", "garden", "balcony", "quiet",
-    }
-    return "✅" if any(p in flag.lower() for p in _POSITIVE) else "⚠️"
+    if "?" in flag:
+        return "❓"
+    _UNCLEAR = {"unclear", "not stated", "not specified", "unknown"}
+    if any(w in flag.lower() for w in _UNCLEAR):
+        return "❓"
+    return "⚠️"
 
 
 def _format_listing(listing: dict) -> str:
@@ -86,13 +89,10 @@ def _format_listing(listing: dict) -> str:
         f"{_b(price_str)} | {commute_line} | {_e(epc_str)} | {_e(crime_str)}",
     ]
 
-    # Deal flags — one per line, skip data-gap noise
-    commute_mins = listing.get("commute_mins")
-    fast_commute = commute_mins is not None and commute_mins < 30
+    # Deal flags — one per line, skip stats duplicates and data-gap noise
     for flag in (listing.get("deal_flags") or []):
-        if not _is_data_gap(flag):
-            icon = "✅" if (fast_commute and "commute" in flag.lower()) else _flag_icon(flag)
-            lines.append(f"{icon} {_e(flag)}")
+        if not _should_skip(flag):
+            lines.append(f"{_flag_icon(flag)} {_e(flag)}")
 
     if url:
         lines.append(url)
