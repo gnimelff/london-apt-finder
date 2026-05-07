@@ -25,10 +25,9 @@ BATCH_SIZE = 20
 def scrape(max_price: int = 3200, min_beds: int = 1, max_results: int = 150) -> list[dict]:
     params = {
         "term": "London",
+        "area": 8,
         "bedrooms_min": min_beds,
         "prices_max": max_price,
-        "isLive": "true",
-        "within": 40,
     }
     try:
         resp = fetch(SEARCH_URL, params=params)
