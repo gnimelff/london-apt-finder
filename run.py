@@ -122,6 +122,8 @@ def _pre_filter(listing: dict) -> bool:
 
     if price and price > 3200:
         return False
+    if price and price < 2000:
+        return False
     if beds is not None and beds < 1:
         return False
 

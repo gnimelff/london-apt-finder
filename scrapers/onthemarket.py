@@ -18,12 +18,13 @@ log = logging.getLogger(__name__)
 SEARCH_URL = "https://www.onthemarket.com/to-rent/property/london/"
 
 
-def scrape(max_price: int = 3200, min_beds: int = 1, max_pages: int = 3) -> list[dict]:
+def scrape(max_price: int = 3200, min_price: int = 2000, min_beds: int = 1, max_pages: int = 3) -> list[dict]:
     listings = []
 
     for page in range(1, max_pages + 1):
         params = [
             ("min-bedrooms", min_beds),
+            ("min-price", min_price),
             ("max-price", max_price),
             ("prop-types", "bungalows"),
             ("prop-types", "detached"),

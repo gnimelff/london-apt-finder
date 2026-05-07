@@ -25,19 +25,20 @@ BASE_SEARCH = (
     "&includeLetAgreed=false"
     "&dontShow=houseShare%2Cretirement%2Cstudent"
     "&minBedrooms={min_beds}"
+    "&minPrice={min_price}"
     "&maxPrice={max_price}"
     "&index={index}"
     "&sortType=6"
 )
 
 
-def scrape(max_price: int = 3200, min_beds: int = 1, max_pages: int = 3) -> list[dict]:
+def scrape(max_price: int = 3200, min_price: int = 2000, min_beds: int = 1, max_pages: int = 3) -> list[dict]:
     listings = []
     page_size = 25  # Rightmove returns 25 per page
 
     for page in range(max_pages):
         index = page * page_size
-        url = BASE_SEARCH.format(min_beds=min_beds, max_price=max_price, index=index)
+        url = BASE_SEARCH.format(min_beds=min_beds, min_price=min_price, max_price=max_price, index=index)
 
         try:
             resp = fetch(url)

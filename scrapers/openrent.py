@@ -22,11 +22,12 @@ DETAILS_URL = "https://www.openrent.co.uk/search/propertiesbyid"
 BATCH_SIZE = 20
 
 
-def scrape(max_price: int = 3200, min_beds: int = 1, max_results: int = 150) -> list[dict]:
+def scrape(max_price: int = 3200, min_price: int = 2000, min_beds: int = 1, max_results: int = 150) -> list[dict]:
     params = {
         "term": "London",
         "area": 8,
         "bedrooms_min": min_beds,
+        "prices_min": min_price,
         "prices_max": max_price,
     }
     try:
