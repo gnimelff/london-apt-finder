@@ -96,8 +96,18 @@ def _format_listing(listing: dict) -> str:
     # Deal flags — one per line, skip stats duplicates and data-gap noise
     for flag in (listing.get("deal_flags") or []):
         if not _should_skip(flag):
-            # Strip leading ✓/✗/? markers Claude embeds — we replace them with our emoji
+            # Strip leading ✓/✗/? markers and verbose prefixes Claude sometimes adds
             clean = flag.lstrip("✓✗? ").strip()
+            for prefix in ("Strong: ", "Strong:", "DATA GAP: ", "DATA GAP:", "Note: ", "Note:",
+                           "Positive: ", "Negative: ", "Warning: "):
+                if clean.startswith(prefix):
+                    clean = clean[len(prefix):].strip()
+                    break
+            # Truncate at " — " or " – " to drop "unable to confirm..." tails
+            for sep in (" — ", " – ", " - "):
+                if sep in clean:
+                    clean = clean.split(sep)[0].strip()
+                    break
             lines.append(f"{_flag_icon(flag)} {_e(clean)}")
 
     if url:

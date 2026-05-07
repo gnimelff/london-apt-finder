@@ -55,7 +55,14 @@ Return JSON in exactly this format:
   "area_summary": "<one short sentence describing the neighbourhood vibe, e.g. 'Quiet residential street in Herne Hill, popular with young professionals'>",
   "deal_flags": ["<flag1>", "<flag2>"]
 }}
-deal_flags should list any deal-breaker violations, strong positives, or data gaps worth highlighting.
+
+deal_flags rules — strictly follow these:
+- Maximum 4 words per flag. No exceptions.
+- No prefixes like "Strong:", "DATA GAP:", "Note:", "Positive:", "Negative:"
+- No explanations or sub-clauses after a dash. Just the fact.
+- Good examples: "Furnished", "Floor unknown", "Above budget", "Fast commute", "Basement risk"
+- Bad examples: "Strong: Furnished as preferred", "DATA GAP: Floor not specified — unable to confirm requirement"
+- Only include flags for: furnished status, floor level, deal-breaker violations, and standout positives.
 """
 
 
