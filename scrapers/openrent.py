@@ -34,7 +34,7 @@ def scrape(max_price: int = 3200, min_beds: int = 1, max_results: int = 150) -> 
         resp = fetch(SEARCH_URL, params=params)
     except Exception as e:
         log.error("OpenRent search page failed: %s", e)
-        return []
+        raise  # propagate so run.py can send a Telegram alert
 
     arrays = _extract_arrays(resp.text)
     if not arrays or not arrays.get("PROPERTYIDS"):
