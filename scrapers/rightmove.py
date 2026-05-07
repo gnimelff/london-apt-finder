@@ -21,12 +21,13 @@ log = logging.getLogger(__name__)
 BASE_SEARCH = (
     "https://www.rightmove.co.uk/property-to-rent/find.html"
     "?locationIdentifier=REGION%5E87490"
-    "&propertyTypes=flat"
+    "&propertyTypes=detached%2Csemi-detached%2Cterraced%2Cflat%2Cbungalow"
     "&includeLetAgreed=false"
-    "&dontShow=houseShare%2Cretirement"
+    "&dontShow=houseShare%2Cretirement%2Cstudent"
     "&minBedrooms={min_beds}"
     "&maxPrice={max_price}"
     "&index={index}"
+    "&sortType=6"
 )
 
 
