@@ -73,8 +73,8 @@ def run():
 
         # Skip scoring if commute is too long (saves Claude credits)
         commute = listing.get("commute_mins")
-        if commute is not None and commute > 45:
-            log.info("  Skipping (commute %d min > 45)", commute)
+        if commute is not None and commute > 40:
+            log.info("  Skipping (commute %d min > 40)", commute)
             save_listing(listing)
             continue
 
