@@ -1,7 +1,7 @@
 commute_destination:
-  address: "Your office address, London"
-  lat: 51.5074
-  lng: -0.1278
+  address: "Your office address, London"  # replace with your actual destination
+  lat: 51.5074  # replace with actual lat
+  lng: -0.1278  # replace with actual lng
 
 must_haves:
   max_commute_mins: 40
