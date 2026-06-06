@@ -16,3 +16,6 @@ CALLMEBOT_API_KEY = os.environ.get("CALLMEBOT_API_KEY", "")
 WHATSAPP_PHONE = os.environ.get("WHATSAPP_PHONE", "")
 
 SCORE_THRESHOLD = int(os.environ.get("SCORE_THRESHOLD", "5"))
+
+DEST_LAT = float(os.environ.get("DEST_LAT", "51.5074"))
+DEST_LNG = float(os.environ.get("DEST_LNG", "-0.1278"))

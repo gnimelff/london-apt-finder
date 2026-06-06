@@ -42,5 +42,7 @@ jobs:
           TELEGRAM_CHAT_IDS: ${{ secrets.TELEGRAM_CHAT_IDS }}
 
           SCORE_THRESHOLD: '5'
+          DEST_LAT: ${{ secrets.DEST_LAT }}
+          DEST_LNG: ${{ secrets.DEST_LNG }}
       # seen.db is automatically saved to cache after the job completes
       # (actions/cache saves on post-step when key doesn't already exist)

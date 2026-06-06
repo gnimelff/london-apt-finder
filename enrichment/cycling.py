@@ -6,15 +6,13 @@ Returns (duration_mins, distance_km) or (None, None) on failure.
 """
 import logging
 import httpx
-from config import TFL_API_KEY
+from config import TFL_API_KEY, DEST_LAT, DEST_LNG
 
 log = logging.getLogger(__name__)
 
 JOURNEY_URL = "https://api.tfl.gov.uk/Journey/JourneyResults/{origin}/to/{destination}"
 
-# WeWork Waterloo destination
-DEST_LAT = 51.5074
-DEST_LNG = -0.1278
+# Destination loaded from DEST_LAT / DEST_LNG env vars (set in GitHub secrets)
 
 
 def cycling_commute(lat: float, lng: float) -> tuple[int | None, float | None]:
