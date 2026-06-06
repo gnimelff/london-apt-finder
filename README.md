@@ -1,57 +1,135 @@
 # London Apartment Finder
 
-Monitors Rightmove, OpenRent, and OnTheMarket every 30 minutes. Enriches each new listing with TfL commute time, crime data, and EPC rating. Scores it against your preferences using Claude Haiku. Sends a WhatsApp message for anything scoring 7+.
+An automated apartment hunting agent that monitors Rightmove, OpenRent, and OnTheMarket, enriches each listing with real commute data and local stats, scores it against your preferences using Claude AI, and sends a Telegram notification for anything worth seeing.
 
-Runs entirely on free infrastructure via GitHub Actions + Supabase.
+Runs on GitHub Actions once daily. Total cost: ~$1–2/month.
 
-## One-time setup
+## How It Works
 
-No database to create — the app uses a local SQLite file (`seen.db`) that's persisted between GitHub Actions runs via the Actions cache. Zero external DB services needed.
+```
+Scrapers (Rightmove · OpenRent · OnTheMarket)
+          │
+          ▼
+Deduplication (SQLite — persisted via GitHub Actions cache)
+          │
+          ▼
+Enrichment Pipeline
+  ├─ TfL Journey Planner API  →  door-to-door tube/rail commute time
+  ├─ Cycling route estimate   →  bike commute time + distance
+  ├─ EPC Register API         →  energy efficiency rating
+  ├─ postcodes.io             →  borough + lat/lng fallback
+  └─ Text analysis            →  floor level + basement detection
+          │
+          ▼
+Claude Haiku scoring (1–10, with rationale + deal flags)
+scored against your preferences.yaml
+          │
+          ▼
+Telegram notification (listings at or above your score threshold)
+```
+
+## Features
+
+- **3 site scrapers** — Rightmove, OpenRent, OnTheMarket with dedup across all three
+- **Real commute data** — TfL Journey Planner for tube/rail; cycling time and distance estimate
+- **EPC ratings** — energy efficiency pulled from the national register
+- **Basement detection** — text analysis flags lower-ground and basement flats automatically
+- **AI scoring** — Claude Haiku scores each listing 1–10 with a rationale, area vibe summary, and deal flags
+- **YAML preferences** — edit `preferences.yaml` to change your budget, commute limit, or deal-breakers; changes take effect on the next run with no redeploy
+- **Zero-cost database** — SQLite file persisted between GitHub Actions runs via the Actions cache
+- **Telegram notifications** — batched HTML-formatted messages with score, price, commute, and a direct link
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Scrapers | Python · httpx · BeautifulSoup |
+| Enrichment | TfL API · postcodes.io · EPC Register |
+| Scoring | Claude Haiku (Anthropic) |
+| Notifications | Telegram Bot API |
+| Database | SQLite (GitHub Actions cache) |
+| Automation | GitHub Actions cron |
+
+## Setup
 
 ### 1. Get API keys
 
-| Service | URL | Notes |
+| Service | Where | Notes |
 |---|---|---|
-| Anthropic | [console.anthropic.com](https://console.anthropic.com) | Claude Haiku, ~$2/month |
+| Anthropic | [console.anthropic.com](https://console.anthropic.com) | Claude Haiku, ~$1–2/month |
 | TfL | [api-portal.tfl.gov.uk](https://api-portal.tfl.gov.uk) | Free, 500 req/day |
-| EPC Register | [epc.opendatacommunities.org](https://epc.opendatacommunities.org) | Free, register + base64 encode `email:key` |
-| CallMeBot | See below | Free WhatsApp notifications |
+| EPC Register | [epc.opendatacommunities.org](https://epc.opendatacommunities.org) | Free — base64 encode `email:key` after registering |
+| Telegram | @BotFather on Telegram | Free — `/newbot` to create a bot, then fetch `/getUpdates` to get your chat ID |
 
-**CallMeBot setup:**
-1. Save `+34 644 59 78 78` in your contacts as "CallMeBot"
-2. Send it this WhatsApp message: `I allow callmebot to send me messages`
-3. You'll receive your API key within 60 seconds
+### 2. Configure your search
 
-### 3. Configure preferences
-Edit `preferences.yaml` to set your budget, commute threshold, and preferred neighbourhoods.
+Edit `preferences.yaml`:
+
+```yaml
+commute_destination:
+  address: "Your office address"
+  lat: 51.5074
+  lng: -0.1278
+
+must_haves:
+  max_commute_mins: 40
+  max_price_pcm: 3000
+  min_bedrooms: 1
+
+deal_breakers:
+  - commute > 40 minutes
+  - price > £3,000/month
+  - basement flat
+```
+
+The scorer re-reads this file on every run — no redeploy needed.
 
 ### 3. Deploy to GitHub Actions
-1. Push this repo to a private GitHub repo
-2. Go to Settings → Secrets and variables → Actions → add each key from `.env.example`
-3. The workflow runs every 30 minutes automatically; `seen.db` is cached between runs
-4. Trigger a manual run from Actions → "Scrape London Apartments" → Run workflow to test
+
+1. Fork this repo (keep it private — your preferences contain your commute destination)
+2. Go to **Settings → Secrets and variables → Actions** and add each key from `.env.example`
+3. The workflow runs daily at 10am BST; trigger a test run from **Actions → Scrape London Apartments → Run workflow**
 
 ### 4. Test locally first
+
 ```bash
 cp .env.example .env
-# fill in .env
+# fill in your keys
 pip install -r requirements.txt
 python run.py
 ```
 
-## Adjusting your preferences
-Edit `preferences.yaml` — the scorer re-reads it on every run, so changes take effect immediately with no redeploy needed.
+## Scoring Logic
 
-## Adding Zoopla
-Zoopla uses an internal GraphQL API that's harder to maintain. The simplest approach is to add an [Apify actor](https://apify.com/automation-lab/rightmove-scraper) and call it via their API. ~$5-10/month.
+Claude Haiku scores each listing on a transparent rubric:
+
+| Factor | Adjustment |
+|---|---|
+| Base | 7 |
+| Commute ≤ 20 min | 0 |
+| Commute 21–30 min | −1 |
+| Commute 31–40 min | −2 |
+| Commute > 40 min | deal-breaker (≤ 3) |
+| Price ≤ £2,500/mo | 0 |
+| Price £2,501–£2,750 | −1 |
+| Price £2,751–£3,000 | −2 |
+| Price > £3,000 | deal-breaker (≤ 3) |
+| Cycling < 20 min | +2 |
+| Cycling 20–30 min | +1 |
+| Unfurnished | −1 |
+| Basement flat | deal-breaker (≤ 3) |
+| New build / recently renovated | +1 |
+
+Adjust the scoring prompt in `scoring/claude.py` to match your own priorities.
 
 ## Cost
+
 | Item | Cost |
 |---|---|
-| SQLite (local file, no DB service) | Free |
 | GitHub Actions | Free |
 | TfL API | Free |
-| EPC + crime APIs | Free |
+| EPC Register | Free |
+| postcodes.io | Free |
+| Telegram Bot | Free |
 | Claude Haiku | ~$0.50–2/month |
-| CallMeBot | Free |
 | **Total** | **~$1–2/month** |
